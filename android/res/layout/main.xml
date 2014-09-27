@@ -1,6 +1,76 @@
 <?xml version="1.0" encoding="utf-8"?>
-<fragment xmlns:android="http://schemas.android.com/apk/res/android"
-          android:id="@+id/map"
-          android:layout_width="match_parent"
-          android:layout_height="match_parent"
-          android:name="com.google.android.gms.maps.MapFragment"/>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+  <Button
+      android:id="@+id/pin"
+      android:layout_height="wrap_content"
+      android:layout_width="match_parent"
+      android:text="@string/button_pin" />
+  <LinearLayout
+      android:id="@+id/linearLayout1"
+      android:layout_below="@id/pin"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:orientation="horizontal" >
+    <Button
+        android:id="@+id/btn_recent"
+        android:layout_weight="1"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/button_recent"
+        style="?android:attr/borderlessButtonStyle" />
+    <Button
+        android:id="@+id/btn_near"
+        android:layout_weight="1"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/button_near"
+        style="?android:attr/borderlessButtonStyle" />
+    <Button
+        android:id="@+id/btn_hot"
+        android:layout_weight="1"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/button_hot"
+        style="?android:attr/borderlessButtonStyle" />
+  </LinearLayout>
+  <LinearLayout
+      android:id="@+id/linearLayout2"
+      android:layout_alignParentBottom="true"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:orientation="horizontal" >
+    <Button
+        android:id="@+id/btn_feed"
+        android:layout_weight="1"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:text="@string/button_feed"
+        style="?android:attr/borderlessButtonStyle" />
+    <Button
+        android:id="@+id/btn_map"
+        android:layout_weight="1"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:text="@string/button_map"
+        style="?android:attr/borderlessButtonStyle" />
+  </LinearLayout>
+  <ListView
+      android:id="@+id/feed_view"
+      android:layout_below="@id/linearLayout1"
+      android:layout_above="@id/linearLayout2"
+      android:layout_height="fill_parent"
+      android:layout_width="fill_parent"
+      android:visibility="gone">
+  </ListView>
+  <fragment xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/map_view"
+            android:layout_below="@id/linearLayout1"
+            android:layout_above="@id/linearLayout2"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:name="com.google.android.gms.maps.MapFragment"/>
+</RelativeLayout>
