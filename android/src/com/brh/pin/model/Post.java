@@ -1,6 +1,5 @@
-package com.brh.pin;
+package com.brh.pin.model;
 
-import android.location.Location;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.message.BasicNameValuePair;
@@ -24,26 +23,38 @@ public class Post {
         this.content = content;
     }
 
-    public void setLocation(Location location) {
-        this.location = location;
-    }
 
     private String creator;
     private String content;
-    private Location location;
 
-    public Post(String content, Location location, String creator) {
+    public double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
+    }
+
+    public double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
+    }
+
+    private double latitude;
+    private double longitude;
+
+    public Post(String creator, String content, double latitude, double longitude) {
         this.creator = creator;
         this.content = content;
-        this.location = location;
+        this.latitude = latitude;
+        this.longitude = longitude;
     }
 
     public String getContent() {
         return content;
-    }
-
-    public Location getLocation() {
-        return location;
     }
 
     public String getCreator() {
@@ -56,8 +67,8 @@ public class Post {
 
         nameValuePairs.add(new BasicNameValuePair("content", content));
         nameValuePairs.add(new BasicNameValuePair("creator", creator));
-        nameValuePairs.add(new BasicNameValuePair("lat", String.valueOf(location.getLatitude())));
-        nameValuePairs.add(new BasicNameValuePair("long", String.valueOf(location.getLongitude())));
+        nameValuePairs.add(new BasicNameValuePair("lat", String.valueOf(latitude)));
+        nameValuePairs.add(new BasicNameValuePair("long", String.valueOf(longitude)));
 
         UrlEncodedFormEntity urlEncodedFormEntity = null;
         try {
@@ -69,13 +80,30 @@ public class Post {
         return urlEncodedFormEntity;
     }
 
+    public static Post fromJson(JSONObject json) {
+        String content, creator;
+        double latitude, longitude;
+
+        try {
+            content = json.getString("content");
+            creator = json.getString("creator");
+            latitude = json.getDouble("lat");
+            longitude = json.getDouble("long");
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        return new Post(creator, content, latitude, longitude);
+    }
+
     public JSONObject getJson() {
         JSONObject json = new JSONObject();
         try {
             json.put("creator", creator);
             json.put("content", content);
-            json.put("lat", location.getLatitude());
-            json.put("long", location.getLongitude());
+            json.put("lat", latitude);
+            json.put("long", longitude);
         } catch (JSONException e) {
             e.printStackTrace();
         }

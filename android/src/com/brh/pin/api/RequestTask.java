@@ -9,18 +9,20 @@ import org.apache.http.impl.client.DefaultHttpClient;
 
 import java.io.IOException;
 
-class RequestTask extends AsyncTask<Void, Long, Integer> {
+class RequestTask extends AsyncTask<Void, Long, HttpResponse> {
 
     private String url;
     private UrlEncodedFormEntity formEntity;
+    private final RequestTask.Callback finished;
 
-    public RequestTask(String url, UrlEncodedFormEntity formEntity) {
+    public RequestTask(String url, UrlEncodedFormEntity formEntity, RequestTask.Callback finished) {
         this.url = url;
         this.formEntity = formEntity;
+        this.finished = finished;
     }
 
     @Override
-    protected Integer doInBackground(Void... ignored) {
+    protected HttpResponse doInBackground(Void... ignored) {
         HttpResponse httpResponse = null;
         try {
             DefaultHttpClient httpClient = new DefaultHttpClient();
@@ -30,14 +32,20 @@ class RequestTask extends AsyncTask<Void, Long, Integer> {
 
             httpResponse = httpClient.execute(httpPost);
             Log.e("bizu", httpResponse.getStatusLine().toString());
-            return httpResponse.getStatusLine().getStatusCode();
+            return httpResponse;
         } catch (IOException e) {
             e.printStackTrace();
         }
         return null;
     }
 
-    protected void onPostExecute(Integer result) {
-        //Create a toast with the status code.
+    @Override
+    protected void onPostExecute(HttpResponse result) {
+        if (finished != null)
+            finished.onFinished(result);
+    }
+
+    public interface Callback {
+        void onFinished(HttpResponse httpResponse);
     }
 }

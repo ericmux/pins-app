@@ -12,6 +12,7 @@ import android.view.Window;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.*;
 import com.brh.pin.api.APIHandler;
+import com.brh.pin.model.Post;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient;
 import com.google.android.gms.location.LocationClient;
@@ -158,7 +159,9 @@ public class FeedActivity extends Activity implements
                 Toast.makeText(this, "Maps not connected.", Toast.LENGTH_SHORT);
             }
             final Post post = new Post();
-            post.setLocation(mLocationClient.getLastLocation());
+            Location loc = mLocationClient.getLastLocation();
+            post.setLatitude(loc.getLatitude());
+            post.setLongitude(loc.getLongitude());
             post.setCreator("moco");
             createNewPinDialog(post, new Runnable() {
                 @Override
