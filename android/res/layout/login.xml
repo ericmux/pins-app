@@ -25,7 +25,7 @@
     />
 
   <EditText
-    android:id="@+id/editName"
+    android:id="@+id/editUsername"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_alignBottom="@+id/textView2"
@@ -47,16 +47,16 @@
     />
 
   <EditText
-    android:id="@+id/editPass"
+    android:id="@+id/editPassword"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_alignBottom="@+id/textView3"
-    android:layout_alignLeft="@+id/editName"
+    android:layout_alignLeft="@+id/editUsername"
     android:ems="10"
     android:inputType="textPassword" />
   <LinearLayout
     android:id="@+id/linearLayout1"
-    android:layout_below="@+id/editPass"
+    android:layout_below="@+id/editPassword"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginTop="40dp"
