@@ -2,10 +2,7 @@ package com.brh.pin;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.IntentSender;
+import android.content.*;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
@@ -25,6 +22,9 @@ import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class FeedActivity extends Activity implements
@@ -42,6 +42,8 @@ public class FeedActivity extends Activity implements
     private Button btnPin;
     private Button btnSettings;
     boolean connected = false;
+    private ArrayList<String> feedPosts;
+    private SharedPreferences sharedpreferences;
 
     /*
      * Called by Location Services when the request to connect the
@@ -64,12 +66,30 @@ public class FeedActivity extends Activity implements
                     public void onGotPosts(List<Post> posts) {
                         Log.e("pinapp", "onGotPosts");
                         Log.e("pinapp", "number of posts received: " + posts.size());
+
+                        clearFeed();
+                        Collections.sort(posts, new Comparator<Post>() {
+                            @Override
+                            public int compare(Post lhs, Post rhs) {
+                                return ((int) (rhs.getAge() - lhs.getAge()));
+                            }
+                        });
                         for (Post post : posts) {
                             Log.e("pinapp", post.toString());
-                            map.addMarker(new MarkerOptions()
-                                    .anchor(0.5f, 1.0f) // Anchors the marker on the bottom center
-                                    .position(new LatLng(post.getLatitude(), post.getLongitude()))
-                                    .title(post.getContent()));
+                            addMarkerFromPost(post);
+
+                            // add to feed
+                            String itemContent;
+                            itemContent = "\"" + post.getContent() + "\"";
+                            itemContent += " - " + post.getCreator() +"\n";
+
+                            for (String tag : post.getTags()) {
+                                itemContent += "#" + tag + " ";
+                            }
+
+                            itemContent += "\n";
+                            itemContent += (int) post.getAge()/60 + " min";
+                            addItemList(itemContent);
                         }
                     }
                 });
@@ -77,6 +97,16 @@ public class FeedActivity extends Activity implements
 
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(
                 new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude()), 16));
+    }
+
+    private void clearFeed() {
+        feedPosts.clear();
+        ((ArrayAdapter<String>) feedView.getAdapter()).notifyDataSetChanged();
+    }
+
+    protected void addItemList(String str) {
+        feedPosts.add(0,str);
+        ((ArrayAdapter<String>) feedView.getAdapter()).notifyDataSetChanged();
     }
 
     void showErrorDialog(int error) {
@@ -131,6 +161,8 @@ public class FeedActivity extends Activity implements
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.main);
 
+        sharedpreferences = this.getSharedPreferences("MyPref", 0);
+
         feedView = (ListView) findViewById(R.id.feed_view);
         mapView = findViewById(R.id.map_view);
 
@@ -154,6 +186,13 @@ public class FeedActivity extends Activity implements
         btnMap.setOnClickListener(this);
         btnPin.setOnClickListener(this);
         btnSettings.setOnClickListener(this);
+    }
+
+    @Override
+    protected void onResume() {
+        sharedpreferences = this.getSharedPreferences("MyPref", 0);
+
+        super.onResume();
     }
 
     @Override
@@ -184,17 +223,14 @@ public class FeedActivity extends Activity implements
             Location mLocation = mLocationClient.getLastLocation();
             post.setLatitude(mLocation.getLatitude());
             post.setLongitude(mLocation.getLongitude());
-            post.setCreator("moco");
+            post.setCreator(sharedpreferences.getString("username", "user_not_found"));
             createNewPinDialog(post, new Runnable() {
                 @Override
                 public void run() {
                     APIHandler apiHandler = new APIHandler();
                     apiHandler.savePost(post);
 
-                    map.addMarker(new MarkerOptions()
-                            .anchor(0.5f, 1.0f)
-                            .position(new LatLng(post.getLatitude(), post.getLongitude()))
-                            .title(post.getContent()));
+                    addMarkerFromPost(post);
                 }
             }, null).show();
         }
@@ -214,26 +250,11 @@ public class FeedActivity extends Activity implements
     }
 
     private void populateFeedView() {
-        String[] values = new String[] {
-                "Sleeping all day, hacking all night",
-                "Hackhaton!!!",
-                "Sleepyy",
-                "zzzzzzzzzzzz",
-                "Sleeping all day, hacking all night",
-                "Hackhaton!!!",
-                "Sleepyy",
-                "zzzzzzzzzzzz",
-                "Sleeping all day, hacking all night",
-                "Hackhaton!!!",
-                "Sleepyy",
-                "zzzzzzzzzzzz",
-                "Sleeping all day, hacking all night",
-                "Hackhaton!!!",
-                "Sleepyy"
-        };
+        feedPosts = new ArrayList<String>();
+        feedPosts.clear();
 
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
-                android.R.layout.simple_list_item_1, android.R.id.text1, values);
+                R.layout.feed_item, R.id.feed_item_text, feedPosts);
 
         feedView.setAdapter(adapter);
     }
@@ -290,4 +311,38 @@ public class FeedActivity extends Activity implements
         });
         return dialog;
     }
+
+    private void addMarkerFromPost(Post post) {
+        map.addMarker(new MarkerOptions()
+                .anchor(0.5f, 1.0f)
+                .position(new LatLng(post.getLatitude(), post.getLongitude()))
+                .title("#Event!")
+                .snippet(post.getContent()));
+    }
+
+//    class PopupAdapter implements GoogleMap.InfoWindowAdapter {
+//        LayoutInflater inflater=null;
+//
+//        PopupAdapter(LayoutInflater inflater) {
+//            this.inflater=inflater;
+//        }
+//
+//        @Override
+//        public View getInfoWindow(Marker marker) {
+//            return(null);
+//        }
+//
+//        @Override
+//        public View getInfoContents(Marker marker) {
+//            View popup = inflater.inflate(R.layout.popup, null);
+//
+//            TextView tv = (TextView) popup.findViewById(R.id.title);
+//
+//            tv.setText(marker.getTitle());
+//            tv = (TextView) popup.findViewById(R.id.snippet);
+//            tv.setText(marker.getSnippet());
+//
+//            return(popup);
+//        }
+//    }
 }

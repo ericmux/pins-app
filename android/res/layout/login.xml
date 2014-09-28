@@ -32,7 +32,8 @@
     android:layout_alignBottom="@+id/textView2"
     android:layout_marginLeft="32dp"
     android:layout_toRightOf="@+id/textView2"
-    android:ems="10" >
+    android:ems="10"
+    android:singleLine="true" >
 
     <requestFocus />
   </EditText>

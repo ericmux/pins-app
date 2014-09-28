@@ -29,8 +29,8 @@ public class LoginActivity extends Activity {
     public void login(View view) {
         sharedpreferences = this.getSharedPreferences("MyPref", 0);
         editor = sharedpreferences.edit();
-        user = new User((((EditText)findViewById(R.id.editUsername)).toString()),
-                ((EditText)findViewById(R.id.editPassword)).toString());
+        user = new User((((EditText)findViewById(R.id.editUsername)).getText().toString()),
+                ((EditText)findViewById(R.id.editPassword)).getText().toString());
         APIHandler apiHandler = new APIHandler();
         apiHandler.signUp(user);
 
@@ -40,6 +40,7 @@ public class LoginActivity extends Activity {
         editor.commit();
 
         Intent intent = new Intent(this, FeedActivity.class);
+//        intent.putExtra("user_object", user);
         startActivity(intent);
         finish();
     }
@@ -49,10 +50,12 @@ public class LoginActivity extends Activity {
         if (sharedpreferences.contains("username")) {
             if(sharedpreferences.contains("password")){
                 Intent intent = new Intent(this, FeedActivity.class);
+//                intent.putExtra("user_object", user);
                 startActivity(intent);
                 finish();
             }
         }
+
         super.onResume();
     }
 }

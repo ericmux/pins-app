@@ -40,20 +40,15 @@ public class APIHandler  {
         RequestTask task = new RequestTask(URL_GET_POSTS, latLong.getFormEntity(), new RequestTask.Callback() {
 
             @Override
-            public void onFinished(HttpResponse httpResponse) {
+            public void onFinished(String jsonReturned) {
                 Log.e("pinapp", "onFinished requestTask");
                 List<Post> posts = new ArrayList<Post>();
-                final HttpEntity entity = httpResponse.getEntity();
                 try {
-                    JSONArray jsonArray = new JSONArray(EntityUtils.toString(entity));
+                    JSONArray jsonArray = new JSONArray(jsonReturned);
                     for (int i = 0; i < jsonArray.length(); i++) {
                         posts.add(Post.fromJson(jsonArray.getJSONObject(i)));
                     }
                 } catch (JSONException e) {
-                    Log.e("pinapp", "Error parsing server response.");
-                    e.printStackTrace();
-                    getPostsListener.onGotPosts(new ArrayList<Post>());
-                } catch (IOException e) {
                     Log.e("pinapp", "Error parsing server response.");
                     e.printStackTrace();
                     getPostsListener.onGotPosts(new ArrayList<Post>());

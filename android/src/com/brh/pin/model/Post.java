@@ -3,6 +3,7 @@ package com.brh.pin.model;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -26,9 +27,20 @@ public class Post {
 
     private String creator;
     private String content;
-    private double latitude;
-    private double longitude;
 
+    public List<String> getTags() {
+        return tags;
+    }
+
+    public void setTags(List<String> tags) {
+        this.tags = tags;
+    }
+
+    public void setAge(double age) {
+        this.age = age;
+    }
+
+    private List<String> tags;
 
     public double getLatitude() {
         return latitude;
@@ -46,11 +58,18 @@ public class Post {
         this.longitude = longitude;
     }
 
-    public Post(String creator, String content, double latitude, double longitude) {
+    private double latitude;
+    private double longitude;
+
+    private double age;
+
+    public Post(String creator, String content, double latitude, double longitude, double age, List<String> tags) {
         this.creator = creator;
         this.content = content;
+        this.tags = tags;
         this.latitude = latitude;
         this.longitude = longitude;
+        this.age = age;
     }
 
     public String getContent() {
@@ -59,6 +78,10 @@ public class Post {
 
     public String getCreator() {
         return creator;
+    }
+
+    public double getAge() {
+        return age;
     }
 
 
@@ -82,19 +105,26 @@ public class Post {
 
     public static Post fromJson(JSONObject json) {
         String content, creator;
-        double latitude, longitude;
+        double latitude, longitude, age;
+        List<String> tags = new ArrayList<String>();
 
         try {
             content = json.getString("content");
             creator = json.getString("creator");
             latitude = json.getDouble("lat");
             longitude = json.getDouble("long");
+            age = json.getDouble("age");
+
+            JSONArray jsonArrayTags = json.getJSONArray("tags");
+            for (int i = 0; i < jsonArrayTags.length(); i++) {
+                tags.add(jsonArrayTags.getString(i));
+            }
         } catch (JSONException e) {
             e.printStackTrace();
             return null;
         }
 
-        return new Post(creator, content, latitude, longitude);
+        return new Post(creator, content, latitude, longitude, age, tags);
     }
 
     @Override
@@ -102,9 +132,10 @@ public class Post {
         return "Post{" +
                 "creator='" + creator + '\'' +
                 ", content='" + content + '\'' +
+                ", tags=" + tags +
                 ", latitude=" + latitude +
                 ", longitude=" + longitude +
+                ", age=" + age +
                 '}';
     }
-
 }

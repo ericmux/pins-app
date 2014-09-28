@@ -6,10 +6,11 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
 
-class RequestTask extends AsyncTask<Void, Long, HttpResponse> {
+class RequestTask extends AsyncTask<Void, Long, String> {
 
     private String url;
     private UrlEncodedFormEntity formEntity;
@@ -22,7 +23,7 @@ class RequestTask extends AsyncTask<Void, Long, HttpResponse> {
     }
 
     @Override
-    protected HttpResponse doInBackground(Void... ignored) {
+    protected String doInBackground(Void... ignored) {
         HttpResponse httpResponse = null;
         try {
             DefaultHttpClient httpClient = new DefaultHttpClient();
@@ -32,7 +33,7 @@ class RequestTask extends AsyncTask<Void, Long, HttpResponse> {
 
             httpResponse = httpClient.execute(httpPost);
             Log.e("bizu", httpResponse.getStatusLine().toString());
-            return httpResponse;
+            return EntityUtils.toString(httpResponse.getEntity());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -40,12 +41,12 @@ class RequestTask extends AsyncTask<Void, Long, HttpResponse> {
     }
 
     @Override
-    protected void onPostExecute(HttpResponse result) {
+    protected void onPostExecute(String jsonReturned) {
         if (finished != null)
-            finished.onFinished(result);
+            finished.onFinished(jsonReturned);
     }
 
     public interface Callback {
-        void onFinished(HttpResponse httpResponse);
+        void onFinished(String jsonReceived);
     }
 }
