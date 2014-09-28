@@ -4,14 +4,17 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.IntentSender;
 import android.location.Location;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.*;
 import com.brh.pin.api.APIHandler;
+import com.brh.pin.model.LatLongL;
 import com.brh.pin.model.Post;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient;
@@ -20,6 +23,9 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
+
+import java.util.List;
 
 public class FeedActivity extends Activity implements
         GooglePlayServicesClient.ConnectionCallbacks,
@@ -34,6 +40,7 @@ public class FeedActivity extends Activity implements
     private Button btnFeed;
     private Button btnMap;
     private Button btnPin;
+    private Button btnSettings;
     boolean connected = false;
 
     /*
@@ -49,7 +56,23 @@ public class FeedActivity extends Activity implements
 
         Location mCurrentLocation = mLocationClient.getLastLocation();
 
-
+        APIHandler apiHandler = new APIHandler();
+        Log.e("pinapp", "calling getPosts");
+        apiHandler.getPosts(new LatLongL(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude()),
+                new APIHandler.GetPostsListener() {
+                    @Override
+                    public void onGotPosts(List<Post> posts) {
+                        Log.e("pinapp", "onGotPosts");
+                        Log.e("pinapp", "number of posts received: " + posts.size());
+                        for (Post post : posts) {
+                            Log.e("pinapp", post.toString());
+                            map.addMarker(new MarkerOptions()
+                                    .anchor(0.5f, 1.0f) // Anchors the marker on the bottom center
+                                    .position(new LatLng(post.getLatitude(), post.getLongitude()))
+                                    .title(post.getContent()));
+                        }
+                    }
+                });
 
 
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(
@@ -111,7 +134,7 @@ public class FeedActivity extends Activity implements
         feedView = (ListView) findViewById(R.id.feed_view);
         mapView = findViewById(R.id.map_view);
 
-        this.pupulateFeedView();
+        this.populateFeedView();
 
         mLocationClient = new LocationClient(this, this, this);
 
@@ -121,17 +144,16 @@ public class FeedActivity extends Activity implements
         map.setMyLocationEnabled(true);
         map.getUiSettings().setMyLocationButtonEnabled(true);
 
+
+
         btnFeed = (Button) findViewById(R.id.btn_feed);
         btnMap = (Button) findViewById(R.id.btn_map);
         btnPin = (Button) findViewById(R.id.btn_pin);
+        btnSettings = (Button) findViewById(R.id.btn_settings);
         btnFeed.setOnClickListener(this);
         btnMap.setOnClickListener(this);
         btnPin.setOnClickListener(this);
-
-//        map.addMarker(new MarkerOptions()
-//                .anchor(0.0f, 1.0f) // Anchors the marker on the bottom left
-//                .position(new LatLng(0, 0)));
-
+        btnSettings.setOnClickListener(this);
     }
 
     @Override
@@ -159,32 +181,39 @@ public class FeedActivity extends Activity implements
                 Toast.makeText(this, "Maps not connected.", Toast.LENGTH_SHORT);
             }
             final Post post = new Post();
-            Location loc = mLocationClient.getLastLocation();
-            post.setLatitude(loc.getLatitude());
-            post.setLongitude(loc.getLongitude());
+            Location mLocation = mLocationClient.getLastLocation();
+            post.setLatitude(mLocation.getLatitude());
+            post.setLongitude(mLocation.getLongitude());
             post.setCreator("moco");
             createNewPinDialog(post, new Runnable() {
                 @Override
                 public void run() {
                     APIHandler apiHandler = new APIHandler();
                     apiHandler.savePost(post);
+
+                    map.addMarker(new MarkerOptions()
+                            .anchor(0.5f, 1.0f)
+                            .position(new LatLng(post.getLatitude(), post.getLongitude()))
+                            .title(post.getContent()));
                 }
             }, null).show();
         }
-
-        if (clicked == btnMap && mapView.getVisibility() != View.VISIBLE) {
+        else if (clicked == btnMap && mapView.getVisibility() != View.VISIBLE) {
             feedView.setVisibility(View.GONE);
             mapView.setVisibility(View.VISIBLE);
         }
-
-        if (clicked == btnFeed && feedView.getVisibility() != View.VISIBLE) {
+        else if (clicked == btnFeed && feedView.getVisibility() != View.VISIBLE) {
             mapView.setVisibility(View.GONE);
             feedView.setVisibility(View.VISIBLE);
+        }
+        else if (clicked == btnSettings) {
+            Intent intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
         }
 
     }
 
-    private void pupulateFeedView() {
+    private void populateFeedView() {
         String[] values = new String[] {
                 "Sleeping all day, hacking all night",
                 "Hackhaton!!!",
@@ -221,7 +250,7 @@ public class FeedActivity extends Activity implements
         final TextView etContentEvent = (TextView) dialogContent
                 .findViewById(R.id.content_event);
 
-        etContentEvent.setText("Evento bizurado!");
+        etContentEvent.setText("Description here...");
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage("Event Creation:")

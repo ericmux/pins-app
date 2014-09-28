@@ -110,4 +110,14 @@ public class Post {
         return json;
     };
 
+    @Override
+    public String toString() {
+        return "Post{" +
+                "creator='" + creator + '\'' +
+                ", content='" + content + '\'' +
+                ", latitude=" + latitude +
+                ", longitude=" + longitude +
+                '}';
+    }
+
 }

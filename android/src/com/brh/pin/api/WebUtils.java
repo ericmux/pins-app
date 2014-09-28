@@ -27,19 +27,19 @@ public class WebUtils {
         return httpClient.execute(httpPost);
     }
 
-    public static HttpResponse makeRequest(String path, JSONObject params) throws JSONException, IOException {
-        DefaultHttpClient httpClient = new DefaultHttpClient();
-
-        HttpPost httpPost = new HttpPost(path);
-
-        StringEntity se = new StringEntity(params.toString());
-        httpPost.setEntity(se);
-
-        httpPost.setHeader("Accept", "application/json");
-        httpPost.setHeader("Content-type", "application/json");
-
-        return httpClient.execute(httpPost);
-    }
+//    public static HttpResponse makeRequest(String path, JSONObject params) throws JSONException, IOException {
+//        DefaultHttpClient httpClient = new DefaultHttpClient();
+//
+//        HttpPost httpPost = new HttpPost(path);
+//
+//        StringEntity se = new StringEntity(params.toString());
+//        httpPost.setEntity(se);
+//
+//        httpPost.setHeader("Accept", "application/json");
+//        httpPost.setHeader("Content-type", "application/json");
+//
+//        return httpClient.execute(httpPost);
+//    }
 
     private static JSONObject getJsonObjectFromMap(Map params) throws JSONException {
 

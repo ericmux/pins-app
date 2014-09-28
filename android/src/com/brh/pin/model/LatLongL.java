@@ -12,6 +12,11 @@ public class LatLongL {
     private double mLat;
     private double mLong;
 
+    public LatLongL(double mLat, double mLong) {
+        this.mLat = mLat;
+        this.mLong = mLong;
+    }
+
     public double getLat() {
         return mLat;
     }

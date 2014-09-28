@@ -15,4 +15,9 @@
   <string name="password">Password:</string>
   <string name="login">Login</string>
   <string name="register">Register</string>
+  <string name="filters">Filters</string>
+  <string name="range">Range</string>
+  <string name="logout">Logout</string>
+  <string name="config_header">Settings</string>
+  <string name="button_config">+</string>
 </resources>

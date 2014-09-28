@@ -1,0 +1,46 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent">
+  <TextView
+    android:id="@+id/textConfig"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_alignParentTop="true"
+    android:layout_centerHorizontal="true"
+    android:layout_marginTop="10dp"
+    android:text="@string/config_header"
+    android:textAppearance="?android:attr/textAppearanceLarge"
+    />
+  <LinearLayout
+    android:id="@+id/config_linearLayout0"
+    android:layout_centerHorizontal="true"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_marginTop="120dp"
+    android:layout_marginLeft="70dp"
+    android:orientation="vertical" >
+    <Button
+      android:id="@+id/Filters"
+      android:layout_width="300dp"
+      android:layout_height="100dp"
+      android:layout_centerHorizontal="true"
+      android:onClick="setFilters"
+      android:text="@string/filters" />
+
+    <Button
+      android:id="@+id/Range"
+      android:layout_width="300dp"
+      android:layout_height="100dp"
+      android:layout_centerHorizontal="true"
+      android:onClick="setRange"
+      android:text="@string/range" />
+    <Button
+      android:id="@+id/Logout"
+      android:layout_width="300dp"
+      android:layout_height="100dp"
+      android:layout_centerHorizontal="true"
+      android:onClick="Logout"
+      android:text="@string/logout" />
+  </LinearLayout>
+</RelativeLayout>

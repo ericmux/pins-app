@@ -7,8 +7,11 @@ import com.brh.pin.model.LatLongL;
 import com.brh.pin.model.Post;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,14 +35,17 @@ public class APIHandler  {
     }
 
     public void getPosts(LatLongL latLong, final GetPostsListener getPostsListener) {
+
+        Log.e("pinapp", "calling RequestTask");
         RequestTask task = new RequestTask(URL_GET_POSTS, latLong.getFormEntity(), new RequestTask.Callback() {
 
             @Override
             public void onFinished(HttpResponse httpResponse) {
+                Log.e("pinapp", "onFinished requestTask");
                 List<Post> posts = new ArrayList<Post>();
                 final HttpEntity entity = httpResponse.getEntity();
                 try {
-                    JSONArray jsonArray = new JSONArray(entity);
+                    JSONArray jsonArray = new JSONArray(EntityUtils.toString(entity));
                     for (int i = 0; i < jsonArray.length(); i++) {
                         posts.add(Post.fromJson(jsonArray.getJSONObject(i)));
                     }
@@ -47,13 +53,20 @@ public class APIHandler  {
                     Log.e("pinapp", "Error parsing server response.");
                     e.printStackTrace();
                     getPostsListener.onGotPosts(new ArrayList<Post>());
+                } catch (IOException e) {
+                    Log.e("pinapp", "Error parsing server response.");
+                    e.printStackTrace();
+                    getPostsListener.onGotPosts(new ArrayList<Post>());
                 }
+                getPostsListener.onGotPosts(posts);
             }
         });
 
+        task.execute();
+
     }
 
-    interface GetPostsListener {
+    public interface GetPostsListener {
         void onGotPosts(List<Post> posts);
     }
 }

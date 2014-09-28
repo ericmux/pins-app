@@ -10,9 +10,6 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by eduardo on 9/27/14.
- */
 public class User {
 
     private String username;
