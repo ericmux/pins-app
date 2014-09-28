@@ -19,13 +19,11 @@ import com.google.android.gms.location.LocationClient;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 public class FeedActivity extends Activity implements
         GooglePlayServicesClient.ConnectionCallbacks,
@@ -41,9 +39,39 @@ public class FeedActivity extends Activity implements
     private Button btnMap;
     private Button btnPin;
     private Button btnSettings;
+    private Button btnRecent;
+    private Button btnFilter;
     boolean connected = false;
     private ArrayList<String> feedPosts;
     private SharedPreferences sharedpreferences;
+    private static Map<String, Float> tagColors = new HashMap<String, Float>();
+    private static Map<String, Integer> tagCbIds = new HashMap<String, Integer>();
+    private static Map<String, Boolean> tagMapShow = new HashMap<String, Boolean>();
+
+    static {
+        tagColors.put("event", BitmapDescriptorFactory.HUE_YELLOW);
+        tagColors.put("study", BitmapDescriptorFactory.HUE_BLUE);
+        tagColors.put("warning", BitmapDescriptorFactory.HUE_RED);
+        tagColors.put("sport", BitmapDescriptorFactory.HUE_GREEN);
+        tagColors.put("party", BitmapDescriptorFactory.HUE_ORANGE);
+        tagColors.put("random", BitmapDescriptorFactory.HUE_VIOLET);
+
+        tagCbIds.put("event", R.id.cb_event);
+        tagCbIds.put("study", R.id.cb_study);
+        tagCbIds.put("warning", R.id.cb_warning);
+        tagCbIds.put("sport", R.id.cb_sport);
+        tagCbIds.put("party", R.id.cb_party);
+        tagCbIds.put("random", R.id.cb_random);
+
+        tagMapShow.put("event", true);
+        tagMapShow.put("study", true);
+        tagMapShow.put("warning", true);
+        tagMapShow.put("sport", true);
+        tagMapShow.put("party", true);
+        tagMapShow.put("random", true);
+    }
+
+    ;
 
     /*
      * Called by Location Services when the request to connect the
@@ -52,10 +80,19 @@ public class FeedActivity extends Activity implements
      */
     @Override
     public void onConnected(Bundle dataBundle) {
-        connected = true;
-        // Display the connection status
-        Toast.makeText(this, "Connected", Toast.LENGTH_SHORT).show();
+//        connected = true;
+//        Display the connection status
+//        Toast.makeText(this, "Connected", Toast.LENGTH_SHORT).show();
 
+        refreshFeedAndMap();
+
+        Location mCurrentLocation = mLocationClient.getLastLocation();
+
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude()), 16));
+    }
+
+    private void refreshFeedAndMap() {
         Location mCurrentLocation = mLocationClient.getLastLocation();
 
         APIHandler apiHandler = new APIHandler();
@@ -64,6 +101,7 @@ public class FeedActivity extends Activity implements
                 new APIHandler.GetPostsListener() {
                     @Override
                     public void onGotPosts(List<Post> posts) {
+                        map.clear();
                         Log.e("pinapp", "onGotPosts");
                         Log.e("pinapp", "number of posts received: " + posts.size());
 
@@ -75,28 +113,28 @@ public class FeedActivity extends Activity implements
                             }
                         });
                         for (Post post : posts) {
+                            if (!tagMapShow.get(post.getTags().get(0)))
+                                continue;
+
                             Log.e("pinapp", post.toString());
                             addMarkerFromPost(post);
 
                             // add to feed
                             String itemContent;
                             itemContent = "\"" + post.getContent() + "\"";
-                            itemContent += " - " + post.getCreator() +"\n";
+                            itemContent += " - " + post.getCreator() + "\n";
 
                             for (String tag : post.getTags()) {
                                 itemContent += "#" + tag + " ";
                             }
 
                             itemContent += "\n";
-                            itemContent += (int) post.getAge()/60 + " min";
+                            itemContent += (int) post.getAge() / 60 + " min";
                             addItemList(itemContent);
                         }
                     }
                 });
 
-
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude()), 16));
     }
 
     private void clearFeed() {
@@ -182,10 +220,14 @@ public class FeedActivity extends Activity implements
         btnMap = (Button) findViewById(R.id.btn_map);
         btnPin = (Button) findViewById(R.id.btn_pin);
         btnSettings = (Button) findViewById(R.id.btn_settings);
+        btnRecent = (Button) findViewById(R.id.btn_recent);
+        btnFilter = (Button) findViewById(R.id.btn_filter);
         btnFeed.setOnClickListener(this);
         btnMap.setOnClickListener(this);
         btnPin.setOnClickListener(this);
         btnSettings.setOnClickListener(this);
+        btnRecent.setOnClickListener(this);
+        btnFilter.setOnClickListener(this);
     }
 
     @Override
@@ -230,7 +272,7 @@ public class FeedActivity extends Activity implements
                     APIHandler apiHandler = new APIHandler();
                     apiHandler.savePost(post);
 
-                    addMarkerFromPost(post);
+//                    addMarkerFromPost(post);
                 }
             }, null).show();
         }
@@ -246,7 +288,58 @@ public class FeedActivity extends Activity implements
             Intent intent = new Intent(this, SettingsActivity.class);
             startActivity(intent);
         }
+        else if (clicked == btnRecent) {
+            refreshFeedAndMap();
+        }
+        else if (clicked == btnFilter) {
+            openFilterDialog();
+        }
 
+    }
+
+    private void openFilterDialog() {
+        final View dialogContent = View.inflate(this, R.layout.filter_dialog, null);
+
+        for (String tag : tagCbIds.keySet()) {
+            ((CheckBox) dialogContent.findViewById(tagCbIds.get(tag))).setChecked(tagMapShow.get(tag));
+        }
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Tag Filtering:")
+                .setView(dialogContent)
+                .setPositiveButton("Filter", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        for (String tag : tagCbIds.keySet()) {
+                            if (!(((CheckBox) dialogContent.findViewById(tagCbIds.get(tag))).isChecked())) {
+                                tagMapShow.put(tag, false);
+                            }
+                            else
+                                tagMapShow.put(tag, true);
+                        }
+                        refreshFeedAndMap();
+
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                    }
+                });
+
+        AlertDialog dialog = builder.create();
+        dialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+            @Override
+            public void onCancel(DialogInterface dialog) {
+            }
+        });
+        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
+            @Override
+            public void onShow(DialogInterface dialog) {
+            }
+        });
+
+        dialog.show();
     }
 
     private void populateFeedView() {
@@ -313,12 +406,19 @@ public class FeedActivity extends Activity implements
     }
 
     private void addMarkerFromPost(Post post) {
+        StringBuilder builder = new StringBuilder();
+        for (String tag : post.getTags()) {
+            builder.append("#" + tag + " ");
+        }
+
         map.addMarker(new MarkerOptions()
                 .anchor(0.5f, 1.0f)
                 .position(new LatLng(post.getLatitude(), post.getLongitude()))
-                .title("#Event!")
-                .snippet(post.getContent()));
+                .title(builder.toString())
+                .snippet(post.getContent())
+                .icon(BitmapDescriptorFactory.defaultMarker(tagColors.get(post.getTags().get(0)))));
     }
+
 
 //    class PopupAdapter implements GoogleMap.InfoWindowAdapter {
 //        LayoutInflater inflater=null;

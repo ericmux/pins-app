@@ -20,4 +20,5 @@
   <string name="logout">Logout</string>
   <string name="config_header">Settings</string>
   <string name="button_config">+</string>
+  <string name="button_filter">F</string>
 </resources>
