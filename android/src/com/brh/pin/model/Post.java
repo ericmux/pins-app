@@ -26,6 +26,9 @@ public class Post {
 
     private String creator;
     private String content;
+    private double latitude;
+    private double longitude;
+
 
     public double getLatitude() {
         return latitude;
@@ -42,9 +45,6 @@ public class Post {
     public void setLongitude(double longitude) {
         this.longitude = longitude;
     }
-
-    private double latitude;
-    private double longitude;
 
     public Post(String creator, String content, double latitude, double longitude) {
         this.creator = creator;
@@ -96,19 +96,6 @@ public class Post {
 
         return new Post(creator, content, latitude, longitude);
     }
-
-    public JSONObject getJson() {
-        JSONObject json = new JSONObject();
-        try {
-            json.put("creator", creator);
-            json.put("content", content);
-            json.put("lat", latitude);
-            json.put("long", longitude);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return json;
-    };
 
     @Override
     public String toString() {
